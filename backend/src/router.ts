@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { createAccount, login } from './handlers';
+import { createAccount, getUser, login, updateProfile } from './handlers';
 import { handleInputErros } from './middleware/validation';
+import { authenticate } from './middleware/auth';
 
 const router = Router();
 
@@ -23,7 +24,7 @@ router.post("/auth/register",
   createAccount
 );
 
-router.post("/auth/login", 
+router.post("/auth/login",
   body('email')
     .isEmail()
     .withMessage('El email no es válido'),
@@ -33,5 +34,19 @@ router.post("/auth/login",
   handleInputErros,
   login
 );
+
+router.get("/user", authenticate, getUser);
+
+router.patch("/user",
+  body('handle')
+    .notEmpty()
+    .withMessage('El handle no puede ir vacío'),
+  body('description')
+    .notEmpty()
+    .withMessage('La descripción no puede ir vacía'),
+  handleInputErros,
+  authenticate,
+  updateProfile
+)
 
 export default router;

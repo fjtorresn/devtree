@@ -1,7 +1,10 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
 export const generateJWT = (payload: JwtPayload) => {
-    console.log(payload);
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '180d' });
     return token;
+}
+
+export const validateJWT = (token: string): JwtPayload | string => {
+    return jwt.verify(token, process.env.JWT_SECRET);
 }

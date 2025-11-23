@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import slug from 'slug';
 import User from '../models/User';
 import { hashPassword, checkPassword } from '../utils/auth';
-import { generateJWT } from '../utils/jwt';
+import { generateJWT, validateJWT } from '../utils/jwt';
 
 export const createAccount = async (req: Request, res: Response) => {
 
@@ -53,4 +53,32 @@ export const login = async (req: Request, res: Response) => {
     const token = generateJWT({ id: user._id });
 
     res.send(token);
+}
+
+export const getUser = async (req: Request, res: Response) => {
+    return res.json(req.user);
+}
+
+export const updateProfile = async (req: Request, res: Response) => {
+    try {
+        const { description } = req.body;
+
+        // Verificar si el handle ya existe
+        const handle = slug(req.body.handle);
+        const handleExists = await User.findOne({ handle });
+        if (handleExists && handleExists.email !== req.user.email) {
+            const error = new Error('Nombre de usuario no disponible');
+            return res.status(409).json({ error: error.message });
+        }
+
+        // Actualizar user
+        req.user.description = description;
+        req.user.handle = handle;
+        await req.user.save();
+        return res.send("Perfil actualizado correctamente");
+
+    } catch (e) {
+        const error = new Error('Error al actualizar el perfil');
+        return res.status(500).json({ error: error.message });
+    }
 }

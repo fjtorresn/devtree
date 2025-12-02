@@ -7,6 +7,7 @@ import { hashPassword, checkPassword } from '../utils/auth';
 import { generateJWT, validateJWT } from '../utils/jwt';
 import cloudinary from '../config/cloudinary';
 
+
 export const createAccount = async (req: Request, res: Response) => {
 
     const { email, password } = req.body;
@@ -64,7 +65,7 @@ export const getUser = async (req: Request, res: Response) => {
 
 export const updateProfile = async (req: Request, res: Response) => {
     try {
-        const { description } = req.body;
+        const { description, links } = req.body;
 
         // Verificar si el handle ya existe
         const handle = slug(req.body.handle);
@@ -77,6 +78,7 @@ export const updateProfile = async (req: Request, res: Response) => {
         // Actualizar user
         req.user.description = description;
         req.user.handle = handle;
+        req.user.links = links;
         await req.user.save();
         return res.send("Perfil actualizado correctamente");
 
@@ -104,6 +106,21 @@ export const uploadImage = async (req: Request, res: Response) => {
         });
     } catch (e) {
         const error = new Error("No se ha podido subir la imagen");
+        return res.status(500).json({ error: error.message });
+    }
+}
+
+export const getUserByHandle = async (req: Request, res: Response) => {
+    try {
+        const { handle } = req.params;
+        const user = await User.findOne({ handle }).select('-password -email -__v -_id');
+        if (!user) {
+            const error = new Error("Usuario no encontrado");
+            return res.status(404).json({ error: error.message });
+        }
+        res.json(user);
+    } catch (e) {
+        const error = new Error("Hubo un error");
         return res.status(500).json({ error: error.message });
     }
 }

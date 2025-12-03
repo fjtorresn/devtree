@@ -30,9 +30,6 @@ export default function DevTree({ data }: DevTreeProps) {
 
     const queryClient = useQueryClient();
     const handleDragEnd = (e: DragEndEvent) => {
-        console.log(e.active);
-        console.log(e.over);
-
         const { active, over } = e;
         if (over && over.id) {
             const prevIndex = enabledLinks.findIndex(
